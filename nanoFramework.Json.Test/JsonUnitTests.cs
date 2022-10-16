@@ -26,6 +26,56 @@ namespace nanoFramework.Json.Test
             OutputHelper.WriteLine("Cleaning up after Json Library tests.");
         }
 
+
+        //Test class for Can_deserialize_base64_byte_array_to_byte_array()
+        public class Base64TestClass
+        {
+            public byte[] Base64ByteArray { get; set; } =
+                new byte[] { 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16 };
+        }
+
+
+        //Test case to fix issue from: https://discord.com/channels/478725473862549535/481780902058393610/1030886053063700530
+        [TestMethod]
+        public void Can_deserialize_base64_byte_array_to_byte_array()
+        {
+            /*
+             Script used to generate the test data
+            #r "nuget:Newtonsoft.Json/13.0.1"
+using Newtonsoft.Json.Linq;
+class ByteHolder
+{public byte[] goldenByteArray = new byte[] { 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16 };}
+var a = new ByteHolder();
+var serialised = JObject.FromObject(a);
+Console.WriteLine(serialised.ToString());
+            */
+
+            // This is the byte[] that the script used to generate
+            byte[] goldenByteArray = new byte[] { 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16 };
+
+            string jsonFormated =
+                @"{
+                    ""Base64ByteArray"": ""AQIDBAUGBwgJCgsMDQ4P""               
+                }";
+
+            string jsonNoFormated = @"{""Base64ByteArray"":""AQIDBAUGBwgJCgsMDQ4P""}";
+
+            Base64TestClass deserializedFormatted =
+                (Base64TestClass)JsonConvert.DeserializeObject(jsonFormated, typeof(Base64TestClass));
+            Base64TestClass deserializeNoFormat =
+                (Base64TestClass)JsonConvert.DeserializeObject(jsonNoFormated, typeof(Base64TestClass));
+
+            Assert.True(deserializedFormatted.Base64ByteArray.Length == goldenByteArray.Length);
+            Assert.True(deserializeNoFormat.Base64ByteArray.Length == goldenByteArray.Length);
+
+            for (int i = 0; i < goldenByteArray.Length; i++)
+            {
+                Assert.True(deserializedFormatted.Base64ByteArray[i] == goldenByteArray[i]);
+                Assert.True(deserializeNoFormat.Base64ByteArray[i] == goldenByteArray[i]);
+            }
+        }
+
+
         [TestMethod]
         public void Can_serialize_and_deserialize_arrays_of_class_objects()
         {
